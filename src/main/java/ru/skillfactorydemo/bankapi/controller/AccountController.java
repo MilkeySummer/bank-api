@@ -43,17 +43,36 @@ public class AccountController {
         accountService.takeMoney(id, amount);
         return new ApiResponse(BigDecimal.ONE, null );
     }
-   @GetMapping("/operations/{accountId}")
-    public List<OperationDto> getOperationList(@PathVariable Long accountId,
-                                               @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-                                               @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
-       List<Operation> operations = accountService.getOperationList(accountId, startDate, endDate);
-       List<OperationDto> result = new ArrayList<>();
-       for (Operation op : operations) {
-           String typeText = op.getType() == OperationType.PUT ? "Пополнение счета" : "Снятие со счета";
-           result.add(new OperationDto(op.getCreatedAt().toString(), typeText, op.getAmount()));
-       }
-       return result;
+    @GetMapping("/operations/{accountId}")
+    public List<OperationDto> getOperationList(
+            @PathVariable Long accountId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+
+        List<Operation> operations = accountService.getOperationList(accountId, startDate, endDate);
+        List<OperationDto> result = new ArrayList<>();
+
+        for (Operation op : operations) {
+            String typeText = switch (op.getType()) {
+                case PUT -> "Пополнение счета";
+                case TAKE -> "Снятие со счета";
+                case TRANSFER_OUT -> "Исходящий перевод";
+                case TRANSFER_IN -> "Входящий перевод";
+            };
+
+            result.add(new OperationDto(op.getCreatedAt().toString(), typeText, op.getAmount()));
+        }
+        return result;
+    }
+
+    @PostMapping("/transfer")
+    public ApiResponse transferMoney(
+            @RequestParam Long from,
+            @RequestParam Long to,
+            @RequestParam BigDecimal amount) {
+
+        accountService.transferMoney(from, to, amount);
+        return new ApiResponse(BigDecimal.ONE, "Перевод успешно выполнен");
     }
 
 }

@@ -61,7 +61,37 @@ public class AccountService {
         Operation operation = new Operation(account, OperationType.TAKE, amount);
         operationRepository.save(operation);
     }
+    // Метод для перевода средств
+    public void transferMoney(Long fromAccountId, Long toAccountId, BigDecimal amount) {
 
+        if (fromAccountId.equals(toAccountId)) {
+            throw new InvalidAmountException("Cannot transfer money to the same account");
+        }
+
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidAmountException("Amount must be positive");
+        }
+
+        Account fromAccount = accountRepository.findById(fromAccountId)
+                .orElseThrow(() -> new UserNotFoundException("Sender account not found"));
+
+        Account toAccount = accountRepository.findById(toAccountId)
+                .orElseThrow(() -> new UserNotFoundException("Receiver account not found"));
+
+        if (fromAccount.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientFundsException("Insufficient funds for transfer");
+        }
+
+        fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
+        accountRepository.save(fromAccount);
+
+        toAccount.setBalance(toAccount.getBalance().add(amount));
+        accountRepository.save(toAccount);
+
+        operationRepository.save(new Operation(fromAccount, OperationType.TRANSFER_OUT, amount));
+        operationRepository.save(new Operation(toAccount, OperationType.TRANSFER_IN, amount));
+
+    }
     public List<Operation> getOperationList(Long accountId, LocalDateTime startDate, LocalDateTime endDate) {
         return operationRepository.findOperationsByAccountIdAndDateRange(accountId, startDate, endDate);
     }
