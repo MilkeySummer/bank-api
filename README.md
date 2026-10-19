@@ -6,6 +6,11 @@ REST API для управления банковскими счетами, на
 Приложение развернуто и доступно по ссылке:  
 🔗 **[https://bank-api-production-8532.up.railway.app](https://bank-api-production-8532.up.railway.app)**
 
+### Быстрая проверка API (кликабельные ссылки):
+- [Получить баланс аккаунта 1](https://bank-api-production-8532.up.railway.app/api/account/balance/1)
+- [Получить баланс аккаунта 2](https://bank-api-production-8532.up.railway.app/api/account/balance/2)
+- [История операций аккаунта 1](https://bank-api-production-8532.up.railway.app/api/account/operations/1)
+
 ## ⚙️ Реализованный функционал
 - ✅ Получение текущего баланса счета (`GET /api/account/balance/{id}`)
 - ✅ Пополнение счета (`POST /api/account/put/{id}`)
